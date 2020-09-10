@@ -1,0 +1,141 @@
+a. Name: Zhiwei Deng
+b. Student ID: 3669230452
+c. What have I done in this assignment:
+	I have finished all the requirement as described in the Project requirement. In Phase1 all three servers will up and run. And the client will get the function from input command line. In Phases2 the client will send an inquery to AWS using TCP connection. And the AWS will pass the inquery to Server A using an UDP connection. Server A will read the data from map.txt file and store it as an array. Then Server A splits the data into <vertexes> <edges> and <speeds> based on the data format and write them into different sub-files map_.txt. After that, Server A caculates the minimum distances for each nodes in the map using Dijkstra algorithm then pass the result to AWS. AWS sends the result to Server B again. Based on the information, Server B will calculate the transmission delay, propagation delay and total delay then send the result to AWS. In Phases3 the AWS will pass the results and send back to client to display.
+
+d. what each file does:
+	client.c:  it will get the vertex index, map ID, file size from the input and send an inquery to AWS.
+	aws.c:     it will get vertex index, map ID, file size from client and read 'map.txt' file then pass the parameter to Server A and get its results then pass it to Server B. At last, return the 		  	   results to client using TCP connection.
+	serverA.c: After it get data from AWS using UDP, it will make the calculation and then send back the result to aws.
+	serverB.c: After it get data from AWS using UDP, it will make the calculation and then send back the result to aws.
+
+e. how to run the programs:
+	1. Frist you should open five different terminal. And using one of them to type"make all" to compile all the file. 
+	2. typing "make serverA" using one terminal to run serverA.
+	3. typing "make serverB" using one terminal to run serverB.
+	4. typing "make aws" using one terminal to run AWS. 
+	5. typing "./client  <vertex index> <map ID> <file size>" to run the client.
+	6. pressing ctrl + c in each window to exit the server programs.
+
+f. reuse of the code:
+	Some code block for Dijkstra algorithm is from https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-greedy-algo-7/. They are marked in the program.
+
+g. The format of all the messages that sent out from Sockets:
+	P.S. Every message is sent as Array, the format below indicates the order and the contents of each array.
+	1. client:
+	<Map_Id><Source_Vertice_Index><File_Size>
+
+	2. serverA:
+	<Number_of_Nodes><Each_Node_Index><Each_Node_Distance><Transmission_Speed><Propagation_Speed>
+
+	3. serverB:
+	<Tp_for_Each_Node><Tt_for_All_Nodes>
+
+	4. aws to serverA:
+	<Map_Id><Source_Vertice_Index>
+
+	5. aws to serverB:
+	<Number_of_Nodes><File_Size><Each_Node_Index><Each_Node_Distance><Transmission_Speed><Propagation_Speed><Source_Vertice_Index>
+
+	6. aws to client:
+	<Number_of_Nodes><Each_Node_Index><Each_Node_Distance><Tp_for_Each_Node><Tt_for_All_Nodes>
+
+h. The format of all the messages displayed on screen:
+	1. client:
+    The Client is up and running.
+	The client has sent query to AWS using TCP over port <3222>: start vertex <9>; map <C>; file size <1200000>.
+	The client has received results from AWS:
+	-------------------------------------------------------
+	Destination	Min Length	Tt	Tp	Delay
+	-------------------------------------------------------
+	6		12.00		0.02	10.17	10.19
+	7		13.00		0.02	11.02	11.03
+	8		8.00		0.02	6.78	6.80
+	10		7.00		0.02	5.93	5.95
+	11		10.00		0.02	8.47	8.49
+	12		8.00		0.02	6.78	6.80
+	13		14.00		0.02	11.86	11.88
+	-------------------------------------------------------
+	
+	2. aws:
+   	The AWS Server is up and running.
+	The AWS has recieved map ID <C>, start vertex <9> and file size <1200000> from the client using TCP over port <24452>.
+	The AWS has sent map ID and starting vertex to server A using UDP over port <23452>”
+	The AWS has received shortest path from server A:
+	-----------------------------
+	Destination	Min Length
+	-----------------------------
+	6			12
+	7			13
+	8			8
+	10			7
+	11			10
+	12			8
+	13			14
+	-----------------------------
+	The AWS has sent path length, propagation speed and transmission speed to server B using UDP over port <23452>”
+	The AWS has received delays from server B:
+	--------------------------------------------
+	Destination		Tt		Tp		Delay
+	--------------------------------------------
+	6				0.02	10.17	10.19
+	7				0.02	11.02	11.03
+	8				0.02	6.78	6.80
+	10				0.02	5.93	5.95
+	11				0.02	8.47	8.49
+	12				0.02	6.78	6.80
+	13				0.02	11.86	11.88
+	--------------------------------------------
+	The AWS has sent calculated delay to client using TCP over port <24452>.
+
+	3. serverA:
+	The Server A is up and running using UDP on port <21452>.
+	-------------------------------------------
+	Map ID	Num Vertices	Num Edges	
+	-------------------------------------------
+	A			6				8			
+	B			6				6			
+	C			8				15			
+	-------------------------------------------
+	The Server A has received input for finding shortest paths: starting vertex <9> of map <C>.
+	The Server A has identified the following shortest paths:
+	-----------------------------
+	Destination	Min Length
+	-----------------------------
+	6			12
+	7			13
+	8			8
+	10			7
+	11			10
+	12			8
+	13			14
+	-----------------------------
+	The Server A has sent shortest paths to AWS.
+
+	4. serverB:
+	The Server B is up and running using UDP on port <22452>.
+	The Server B has received data for calculation:
+	* Propagation speed: <1.18> km/s;
+	* Transmission speed <8808038.40> Bytes/s;
+	* Path length for destination <6>:<12>;
+	* Path length for destination <7>:<13>;
+	* Path length for destination <8>:<8>;
+	* Path length for destination <10>:<7>;
+	* Path length for destination <11>:<10>;
+	* Path length for destination <12>:<8>;
+	* Path length for destination <13>:<14>;
+	The Server B has finished the calculation of the delays:
+	------------------------
+	Destination	Delay
+	------------------------
+	6			10.19
+	7			11.03
+	8			6.80
+	10			5.95
+	11			8.49
+	12			6.80
+	13			11.88
+	------------------------
+	The Server B has finished sending the output to AWS”
+
+
